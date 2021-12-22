@@ -8,6 +8,7 @@ var http = require('http')
 var path = require('path')
 var staticCache = require('..')
 var LRU = require('ylru')
+var Request = require('superagent').Request;
 
 var app = new Koa()
 var files = {}
@@ -63,6 +64,20 @@ app5.use(staticCache({
 }))
 var server5 = http.createServer(app5.callback())
 
+request.Test.prototype.send1 = function(fn){
+    var self = this;
+    var end = Request.prototype.end;
+      end.call(this, function(err, res){
+  
+      assert();
+  
+      function assert(){
+        self.assert(err, res, fn);
+      }
+    });
+  
+    return this;
+  }
 describe('Static Cache', function () {
 
   it('should dir priority than options.dir', function (done) {
@@ -601,4 +616,42 @@ describe('Static Cache', function () {
       .expect(404)
       .end(done)
   })
+
+  it('should remove cache', function (done) {
+    var app = new Koa()
+    app.use(staticCache({
+      refresh:{
+        token:'abc',
+        apiPath:'/refresh'
+      },
+      dynamic:true
+    }))
+    var server = app.listen()
+    fs.writeFileSync('b.js', 'hello world')
+    request(server)
+      .get('/b.js')
+      .send1((req,res)=>{
+        if(res.text!=='hello world'){
+          throw new Error('err');
+        }
+        fs.writeFileSync('b.js', 'content updated')
+        request(server)
+        .get('/refresh?token=abc&url='+decodeURIComponent('/b.js'))
+        .send1((req,res)=>{
+          if(res.text!=='ok'){
+            throw new Error('err');
+          }
+          request(server)
+          .get('/b.js')
+          .send1((req,res)=>{
+            fs.unlinkSync('b.js');
+            if(res.text!=='content updated'){
+              throw new Error('err');
+            }
+            done()
+          })
+        })
+      })
+  })
+
 })

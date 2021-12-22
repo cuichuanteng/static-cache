@@ -27,7 +27,7 @@ Differences between this library and other libraries such as [static](https://gi
 ## Installation
 
 ```js
-$ npm install koa-static-cache
+npm install koa-static-cache
 ```
 
 ## API
@@ -57,6 +57,8 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.preload` (bool) - caches the assets on initialization or not, default to `true`. always work together with `options.dynamic`.
 - `options.files` (obj) - optional files object. See below.
 - `files` (obj) - optional files object. See below.
+- `refresh` (obj) - optional token object. See below.
+
 ### Aliases
 
 For example, if you have this alias object:
@@ -74,6 +76,22 @@ This is particularly important when serving [favicons](https://github.com/audrey
 
 You can pass in an optional files object.
 This allows you to do two things:
+
+### refresh
+
+Then requests to `/refresh?token=abc&url=/a.js` will refresh cache
+
+```js
+app.use(staticCache({
+  dir: '/public',
+  dynamic: true,
+  refresh:{
+    token:'abc',
+    apiPath:'/refresh',
+  },
+}))
+
+```
 
 #### Combining directories into a single middleware
 

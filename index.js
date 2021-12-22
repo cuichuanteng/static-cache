@@ -37,6 +37,21 @@ module.exports = function staticCache(dir, options, files) {
   return async (ctx, next) => {
     // only accept HEAD and GET
     if (ctx.method !== 'HEAD' && ctx.method !== 'GET') return await next()
+    // refresh cache
+    const { refresh } = options;
+    if(refresh &&  ctx.path === refresh.apiPath && ctx.query.token === refresh.token){
+      const {url} = ctx.query;
+      if(files.get(url)){
+        files.remove(url);
+        ctx.status = 200;
+        ctx.body = 'ok';
+      }else{
+        ctx.status = 404;
+        ctx.body = 'Error: 404';
+      }
+      return;
+    }
+
     // check prefix first to avoid calculate
     if (ctx.path.indexOf(options.prefix) !== 0) return await next()
 
@@ -214,4 +229,12 @@ FileManager.prototype.get = function (key) {
 FileManager.prototype.set = function (key, value) {
   if (this.store) return this.store.set(key, value)
   this.map[key] = value
+}
+
+FileManager.prototype.remove = function (key) {
+  if (this.store){
+    this.store.set(key,undefined);
+  }else{
+    delete this.map[key]
+  }
 }
