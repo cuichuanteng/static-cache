@@ -62,7 +62,7 @@ module.exports = function staticCache(dir, options, files) {
     // check alias
     if(options.alias){
       if(typeof options.alias === 'function'){
-        filename = options.alias(filename) || filename;
+        filename = options.alias(filename,ctx) || filename;
       }else{
         if (options.alias[filename]) filename = options.alias[filename];
       }
