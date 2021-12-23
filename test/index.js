@@ -603,6 +603,32 @@ describe('Static Cache', function () {
       })
   })
 
+  it('should options.alias by function', function (done) {
+    var app = new Koa()
+    app.use(staticCache({
+      dir: path.join(__dirname, '..'),
+      dynamic: true,
+      alias: url=>{
+        if(url==='/'){
+          return '/package.json'
+        }
+      },
+    }))
+    request(app.listen())
+      .get('/')
+      .expect(200, function (err, res) {
+        if (err) return done(err)
+        should.not.exist(err)
+        request(app.listen())
+          .get('/package.json')
+          .expect(200, function (err, res) {
+            if (err) return done(err)
+            should.not.exist(err)
+            done()
+          })
+      })
+  })
+
 
   it('should loadFile under options.dir', function (done) {
     var app = new Koa()

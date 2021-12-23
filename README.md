@@ -50,7 +50,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
 - `options.gzip` (bool) - when request's accept-encoding include gzip, files will compressed by gzip.
 - `options.usePrecompiledGzip` (bool) - try use gzip files, loaded from disk, like nginx gzip_static
-- `options.alias` (obj) - object map of aliases. See below.
+- `options.alias` (obj|function) - object map of aliases or function. See below.
 - `options.prefix` (str) - the url prefix you wish to add, default to `''`.
 - `options.dynamic` (bool) - dynamic load file which not cached on initialization.
 - `options.filter` (function | array) - filter files at init dir, for example - skip non build (source) files. If array set - allow only listed files
@@ -66,6 +66,18 @@ For example, if you have this alias object:
 ```js
 {
   '/favicon.png': '/favicon-32.png'
+}
+```
+
+For example, if you have this alias function:
+
+```js
+function(filename){
+  if(filename==='/'){
+    return '/index.html';
+  }else{
+    return filename;
+  }
 }
 ```
 

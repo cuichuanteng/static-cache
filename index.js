@@ -60,7 +60,13 @@ module.exports = function staticCache(dir, options, files) {
     var filename = path.normalize(safeDecodeURIComponent(ctx.path))
 
     // check alias
-    if (options.alias && options.alias[filename]) filename = options.alias[filename];
+    if(options.alias){
+      if(typeof options.alias === 'function'){
+        filename = options.alias(filename) || filename;
+      }else{
+        if (options.alias[filename]) filename = options.alias[filename];
+      }
+    }
 
     var file = files.get(filename)
     // try to load file
