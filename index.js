@@ -157,7 +157,7 @@ module.exports = function staticCache(dir, options, files) {
       return
     }
 
-    var stream = typeof options.after === 'function' ? options.after(fs.createReadStream(file.path),ctx) : fs.createReadStream(file.path);
+    var stream = typeof options.after === 'function' ? options.after(fs.createReadStream(file.path),file.path,ctx) : fs.createReadStream(file.path);
 
     // update file hash
     if (!file.md5) {
@@ -203,7 +203,7 @@ function loadFile(name, dir, options, files) {
   var obj = files.get(pathname)
   var filename = obj.path = path.join(dir, name)
   var stats = fs.statSync(filename)
-  var buffer = typeof options.after === 'function' ? options.after(fs.readFileSync(filename)) :fs.readFileSync(filename);
+  var buffer = typeof options.after === 'function' ? options.after(fs.readFileSync(filename),filename) :fs.readFileSync(filename);
 
   obj.cacheControl = options.cacheControl
   obj.maxAge = obj.maxAge ? obj.maxAge : options.maxAge || 0

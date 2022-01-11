@@ -725,7 +725,7 @@ describe('Static Cache', function () {
   it('should modify by after callback, buffer false', function (done) {
     var app = new Koa()
     app.use(staticCache({
-      after:(buf,ctx)=>{
+      after:(buf,file,ctx)=>{
         const appendData = Buffer.from(' world')
         if(Buffer.isBuffer(buf)){
           return Buffer.concat([buf,appendData])
