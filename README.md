@@ -58,6 +58,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.files` (obj) - optional files object. See below.
 - `files` (obj) - optional files object. See below.
 - `refresh` (obj) - optional token object. See below.
+- `after` (function) - optional after callback. See below.
 
 ### Aliases
 
@@ -100,6 +101,21 @@ app.use(staticCache({
   refresh:{
     token:'abc',
     apiPath:'/refresh',
+  },
+}))
+
+```
+
+### after
+
+Then requests to `/b.js` will modify result by after callback
+
+```js
+app.use(staticCache({
+  dir: '/public',
+  dynamic: true,
+  after:(buf,ctx)=>{
+    return Buffer.concat([buf,Buffer.from('end')])
   },
 }))
 

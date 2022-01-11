@@ -9,6 +9,7 @@ var path = require('path')
 var staticCache = require('..')
 var LRU = require('ylru')
 var Request = require('superagent').Request;
+const { Stream,Readable } = require('stream')
 
 var app = new Koa()
 var files = {}
@@ -68,7 +69,6 @@ request.Test.prototype.send1 = function(fn){
     var self = this;
     var end = Request.prototype.end;
       end.call(this, function(err, res){
-  
       assert();
   
       function assert(){
@@ -677,6 +677,90 @@ describe('Static Cache', function () {
             done()
           })
         })
+      })
+  })
+
+  it('should modify by after callback, buffer true', function (done) {
+    var app = new Koa()
+    app.use(staticCache({
+      after:(buf,ctx)=>{
+        const appendData = Buffer.from(' world')
+        if(Buffer.isBuffer(buf)){
+          return Buffer.concat([buf,appendData])
+        }else if(buf instanceof Stream){
+          ctx.length+=appendData.length;
+          const stream = new Readable({
+            read(){
+             // todo
+            }
+          });
+          buf.on('data',data=>{
+            stream.push(data)
+          })
+          buf.on('end',(a)=>{
+            stream.push(appendData);
+            stream.push(null)
+          })
+          return stream;
+        }else{
+          return buf
+        }
+      },
+      buffer:true,
+      dynamic:true
+    }))
+    fs.writeFileSync('b.html', 'hello')
+    var server = app.listen()
+    request(server)
+      .get('/b.html')
+      .send1((req,res)=>{
+        if(res.text!=='hello world'){
+          throw new Error('err');
+        }
+        fs.unlinkSync('b.html');
+        done()
+      })
+  })
+
+  it('should modify by after callback, buffer false', function (done) {
+    var app = new Koa()
+    app.use(staticCache({
+      after:(buf,ctx)=>{
+        const appendData = Buffer.from(' world')
+        if(Buffer.isBuffer(buf)){
+          return Buffer.concat([buf,appendData])
+        }else if(buf instanceof Stream){
+          ctx.length+=appendData.length;
+          const stream = new Readable({
+            read(){
+             // todo
+            }
+          });
+          buf.on('data',data=>{
+            stream.push(data)
+          })
+          buf.on('end',(a)=>{
+            stream.push(appendData);
+            stream.push(null)
+          })
+          return stream;
+        }else{
+          return buf
+        }
+      },
+      buffer:false,
+      dynamic:true
+    }))
+    fs.writeFileSync('b.html', 'hello')
+    var server = app.listen()
+    request(server)
+      .get('/b.html')
+      .send1((req,res)=>{
+        if(res.text!=='hello world'){
+          throw new Error('err');
+        }
+        fs.unlinkSync('b.html');
+        done()
       })
   })
 
